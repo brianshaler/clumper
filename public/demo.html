@@ -1,0 +1,14 @@
+<html>
+<head>
+  <title>Demo</title>
+  <script src="/scripts.js?include=true&amp;files=/demo/test2.js"></script>
+  <script>
+  require(['/demo/test2.js'], function (test2) { test2("Demo!"); });
+  </script>
+</head>
+<body>
+  demo
+  <br />
+  <button onclick='javascript: localStorage.clear();'>clear localStorage</button>
+</body>
+</html>
