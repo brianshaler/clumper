@@ -5,7 +5,7 @@ deps = {}
 manifest = {}
 
 window.clumper = clumper =
-  path: "/scripts.json"
+  path: "/clumper.json"
   
   require: (name, next) ->
     

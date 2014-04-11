@@ -9,7 +9,7 @@ app = express()
 app.use app.router
 app.use express.static "#{rootDir}/public"
 
-app.use clumper.middleware "middleware"
+app.use clumper.middleware "#{rootDir}/public"
 
 app.get '/', (req, res, next) ->
   res.redirect '/demo.html'
