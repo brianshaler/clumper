@@ -1,8 +1,12 @@
 config = require './config'
-clumperRequest = require './request'
+middleware = require './middleware'
+assetLoader = require './assetloader'
+asset = require './asset'
 clumperCache = require './cache'
 
 module.exports =
+  middleware: middleware
   config: config
-  request: clumperRequest
   basicCache: clumperCache
+  assetLoader: assetLoader
+  asset: asset

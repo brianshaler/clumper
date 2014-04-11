@@ -1,72 +1,104 @@
 _ = require 'lodash'
 fs = require 'fs'
 path = require 'path'
+crypto = require 'crypto'
+Promise = require 'bluebird'
+
 config = require './config'
 depcheck = require './depcheck'
-crypto = require 'crypto'
+nameResolver = require './nameResolver'
 
-resolveName = (name, baseDir = config.baseDir) ->
-  name = config.pathFilter name
-  if name.charAt(0) != '/'
-    name = "/#{name}"
-  
-  # add .js to everything because why not..
-  unless /\.js$/.test name
-    name = "#{name}.js"
-  
-  # make sure relative path is *within* base directory
-  fullPath = path.resolve "#{baseDir}#{name}"
-  unless baseDir == fullPath.substring 0, baseDir.length
-    # invalid path!
-    name = name.replace '..', '.'
-    fullPath = path.resolve "#{baseDir}#{name}"
-  
-  # return relative path
-  fullPath.substring baseDir.length
+hashFile = (name, next) ->
+  load name, (err, file) ->
+    return next err if err
+    next null, hashFilePathAndData file.path, file.data
 
-load = (name, next) ->
-  config.cache.read name, (err, data) ->
-    return next err, data if err or data
-    
-    relativePath = resolveName name
-    fullPath = "#{config.baseDir}#{relativePath}"
-    file =
+hashFilePathAndData = (path, data) ->
+  hash = crypto.createHash 'md5'
+  # Not a good idea to use mtime if starting your service rebuilds files
+  # hash.update path + dateModified.getTime()
+  hash.update path + data
+  hash.digest('base64').substring 0, 4
+
+
+class File
+  constructor: (name) ->
+    @relativePath = nameResolver name, config.baseDir, config.pathFilter
+    @fullPath = path.join config.baseDir, @relativePath
+    @properties =
       name: name
-      path: relativePath
+      path: @relativePath
       data: null
       error: null
       dateModified: new Date 0
       version: null
       dependencies: []
+  
+  loadFile: =>
+    new Promise (resolve, reject) =>
+      fs.readFile @fullPath, 'utf-8', (err, content) =>
+        return reject() if err and !err.code
+        @properties.error = err.code if err
+        @properties.data = content if content
+        resolve()
+  
+  getDateModified: =>
+    new Promise (resolve, reject) =>
+      fs.stat @fullPath, (err, stats) =>
+        @properties.dateModified = stats.mtime if !err and stats?.mtime
+        resolve()
+  
+  getVersion: =>
+    @properties.version = hashFilePathAndData @properties.path, @properties.data
+    @
+  
+  getDependencies: =>
+    if @properties.data?.length > 0 and /define\(/.test @properties.data
+      @properties.dependencies = depcheck @properties.data, []
+      # clean up paths
+      @properties.dependencies = _.uniq _.map @properties.dependencies, (name) -> config.pathFilter name
+    @
+
+load = (name, next) ->
+  r = Math.random()
+  file = new File name
+  Promise.all [file.loadFile(), file.getDateModified()]
+  .catch (err) ->
+    console.log err.stack
+    console.log 'done! (catch)', r
+    next err
+  .error (err) ->
+    console.log 'done! (error)', r
+    next err
+  .done ->
+    file.getVersion()
+    file.getDependencies()
+    t = file.properties.dateModified.getTime()
+    config.newestFile = t if t > config.newestFile
+    next null, file.properties
+  return
+  
+  fs.readFile fullPath, 'utf-8', (err, content) ->
+    file.error = err.code if err
+    file.data = content if content
     
-    fs.readFile fullPath, 'utf-8', (err, content) ->
-      file.error = err.code if err
-      file.data = content if content
+    # get date modified
+    fs.stat fullPath, (err, stats) ->
+      file.dateModified = stats.mtime if !err and stats?.mtime
       
-      # get date modified
-      fs.stat fullPath, (err, stats) ->
-        file.dateModified = stats.mtime if !err and stats?.mtime
-        t = file.dateModified.getTime()
-        config.newestFile = t if t > config.newestFile
-        
-        hash = crypto.createHash 'md5'
-        #hash.update file.name + file.dateModified.getTime()
-        hash.update file.path + file.data
-        file.version = hash.digest('base64').substring 0, 4
-        
-        if file.data?.length > 0 and /define\(/.test file.data
-          file.dependencies = depcheck file.data, []
-          
-          # clean up paths
-          file.dependencies = _.map file.dependencies, (name) -> config.pathFilter name
-          
-          # save file data and dependency tree to cache
-          config.cache.write name, file, (err) ->
-            next null, file
-        else
-          config.cache.write name, file, (err) ->
-            next null, file
+      t = file.dateModified.getTime()
+      config.newestFile = t if t > config.newestFile
+      
+      file.version = hashFilePathAndData file.path, file.data
+      
+      if file.data?.length > 0 and /define\(/.test file.data
+        file.dependencies = depcheck file.data, []
+        # clean up paths
+        file.dependencies = _.uniq _.map file.dependencies, (name) -> config.pathFilter name
+      
+      next null, file
 
 module.exports =
   load: load
-  resolveName: resolveName
+  hashFile: hashFile
+  hashFilePathAndData: hashFilePathAndData

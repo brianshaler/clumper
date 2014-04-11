@@ -4,15 +4,12 @@ clumper = require './clumper'
 
 rootDir = path.resolve __dirname, '..'
 
-clumper.config.configure
-  baseDir: "#{rootDir}/public"
-
 app = express()
 
 app.use app.router
 app.use express.static "#{rootDir}/public"
 
-app.get '/scripts.:format?', clumper.request
+app.use clumper.middleware "middleware"
 
 app.get '/', (req, res, next) ->
   res.redirect '/demo.html'
