@@ -1,5 +1,8 @@
 fs = require 'fs'
+path = require 'path'
 config = require './config'
+
+clumperPath = path.resolve __dirname, '../../dist/clumper.js'
 
 template = (files) ->
   """
@@ -18,7 +21,7 @@ template = (files) ->
 module.exports = (files, includeClumper, next) ->
   text = template files
   if includeClumper
-    fs.readFile "#{__dirname}/public/clumper.js", 'utf-8', (err, contents) ->
+    fs.readFile "#{clumperPath}", 'utf-8', (err, contents) ->
       return next err if err
       text = contents + "\n;" + text
       next null, text

@@ -22,12 +22,21 @@ describe 'server/assetLoader', ->
       files[0].name.should.equal moduleName
       done()
 
-  it 'c.js should have dependencies', (done) ->
+  it 'c.js should have 2 dependencies', (done) ->
     moduleName = './c.js'
     clumper.assetLoader [moduleName], (err, files) ->
       should.not.exist err
       should.exist files
       files.length.should.equal 3
+      files[0].name.should.equal moduleName
+      done()
+
+  it 'd.js should have 3 dependencies', (done) ->
+    moduleName = './d.js'
+    clumper.assetLoader [moduleName], (err, files) ->
+      should.not.exist err
+      should.exist files
+      files.length.should.equal 4
       files[0].name.should.equal moduleName
       done()
 

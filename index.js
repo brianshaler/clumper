@@ -1,1 +1,1 @@
-module.exports = require('./lib/clumper');
+module.exports = require('./lib/server/clumper');

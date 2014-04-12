@@ -2,7 +2,7 @@ path = require 'path'
 express = require 'express'
 clumper = require './clumper'
 
-rootDir = path.resolve __dirname, '..'
+rootDir = path.resolve __dirname, '../..'
 
 app = express()
 
