@@ -4,20 +4,7 @@ should = require 'should'
 path = require 'path'
 require 'mocha'
 
-global.localStorage = localStorage =
-  data: {}
-  clear: -> localStorage.data = {}
-  getItem: (key) -> localStorage.data[key]
-  setItem: (key, value) -> localStorage.data[key] = value
-
-global.document = document =
-  cookie: ''
-
 describe 'client/cache', ->
-  
-  beforeEach (done) ->
-    localStorage.clear()
-    done()
   
   it 'save to and read from localStorage synchronously', (done) ->
     key = 'testKey'
