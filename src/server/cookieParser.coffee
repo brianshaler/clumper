@@ -1,3 +1,4 @@
+_ = require 'lodash'
 nameResolver = require './nameResolver'
 
 module.exports = (files, requestedNames, rawCookie, newestFile = 0) ->
