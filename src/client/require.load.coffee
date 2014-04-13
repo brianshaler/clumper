@@ -4,7 +4,7 @@
   clumper.require url, (err, dep) ->
     if !dep? or dep?.error
       # fall back to letting requirejs do it's own thang
-      console.log "fall back to letting requirejs do it's own thang"
+      # console.log "fall back to letting requirejs do it's own thang"
       xhr = new XMLHttpRequest()
       xhr.open 'GET', url, true
       xhr.send()
@@ -12,7 +12,7 @@
         if xhr.readyState == 4
           eval xhr.responseText
           name = clumper.getName url
-          clumper.setItem null, name, xhr.responseText
+          clumper.saveModule name, xhr.responseText
           context.completeLoad moduleName
     else
       ((module) ->

@@ -3,6 +3,7 @@
 
 Dependency = require './dependency'
 cache = require './cache'
+fetcher = require './fetcher'
 
 queue = []
 deps = {}
@@ -41,8 +42,17 @@ clumper =
     if stored
       dep.process stored
     else
-      queue.push dep
-      fetch()
+      fetcher.fetch dep.name, (err, file) ->
+        dep.version = file.version if file.version
+        dep.dateModified = file.dateModified
+        if file.data
+          dep.process file.data
+        else if file.error
+          dep.fail file.error
+        else
+          console.log file
+          throw new Error "No file OR data?!"
+        cache.save dep
   
   process: (name, err, data, version = Date.now(), dateModified = 0) ->
     dep = getDep name
@@ -65,67 +75,8 @@ clumper =
         eval stored
       )(->)
   
-  fetch: ->
-    return unless queue.length > 0
-    
-    names = _.map queue, (file) ->
-      file.name
-    
-    names = _.filter names, (name) ->
-      dep = getDep name, false
-      !dep? or (!dep.processed and !dep.error)
-    
-    return unless names.length > 0
-    
-    url = "#{clumper.path}?files=#{names.join ','}"
-    
-    newest = cache.get 'clumperNewest'
-    if newest
-      url += "&newest=#{newest}"
-    
-    queue = []
-    
-    r = new XMLHttpRequest()
-    r.open "GET", url, true
-    r.onreadystatechange = ->
-      return if r.readyState != 4 or r.status != 200
-      data = JSON.parse r.responseText
-      return console.log 'no files?' unless data?.files?
-      for file in data.files
-        if typeof file.dateModified == 'string'
-          file.dateModified = (new Date file.dateModified).getTime()
-        dep = getDep file.name, false
-        if !dep?
-          # try fetching it via path if we haven't seen that name
-          dep = getDep file.path, false
-        
-        if dep
-          # we should either have a data or error payload for each item
-          if file.data
-            dep.version = file.version
-            dep.dateModified = file.dateModified
-            dep.process file.data
-            cache.save dep
-          else if file.error
-            dep.fail file.error
-        else
-          # received a module we didn't know about
-          dep = getDep file.name
-          dep.version = file.version
-          dep.dateModified = file.dateModified
-          unless dep.processed
-            if file.data
-              dep.process file.data
-            else if file.error
-              dep.fail file.error
-          cache.save dep
-      if data.newest > 0
-        cache.removeItemsOlderThan data.newest
-    r.send()
-
-fetch = _.debounce clumper.fetch, 50
-
-clumper.removeItemsOlderThan = cache.removeItemsOlderThan
+  reset: ->
+    cache.clear()
 
 getDep = (name, autoCreate = true) ->
   name = Dependency.getName name
@@ -135,12 +86,51 @@ getDep = (name, autoCreate = true) ->
   else
     null
 
+# When a possibly unknown module shows up
+fetcher.on 'file', (file) ->
+  dep = getDep file.name, false
+  # try finding it via path if we haven't seen that name
+  dep = getDep file.path, false if !dep?
+  
+  # Same version already processed, nothing to do here..
+  return if dep?.processed and dep.version == file.version
+  
+  #console.log "saving unexpected module #{file.name}"
+  if dep
+    # we should either have a data or error payload for each item
+    if file.data
+      dep.version = file.version
+      dep.dateModified = file.dateModified
+      dep.process file.data
+    else if file.error
+      dep.fail file.error
+  else
+    # received a module we didn't know about
+    dep = getDep file.name
+    dep.version = file.version
+    dep.dateModified = file.dateModified
+    unless dep.processed
+      if file.data
+        dep.process file.data
+      else if file.error
+        dep.fail file.error
+  cache.save dep
+
+fetcher.on 'newest', (newest) ->
+  cache.removeItemsOlderThan newest if newest > 0
+
+clumper.removeItemsOlderThan = cache.removeItemsOlderThan
+clumper.getName = Dependency.getName
+
 clumper.saveModule = (name, data, error) ->
   name = Dependency.getName name
-  cache.set dep, name, data, error
+  dep = getDep name
+  dep.data = data
+  dep.error = error
+  cache.save dep
 
 # expose for debug purposes only
-clumper.deps = deps
-clumper.cache = cache
+#clumper.deps = deps
+#clumper.cache = cache
 
 module.exports = clumper

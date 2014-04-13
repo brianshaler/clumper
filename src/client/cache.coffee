@@ -66,6 +66,11 @@ module.exports = cache =
         if cachedAt < time
           localStorage.removeItem name
           delete manifest[name]
+    
+    newest = localStorage.getItem 'clumperNewest'
+    if time > newest
+      localStorage.setItem 'clumperNewest', time
+    
   
   getOldestFile: ->
     oldest = -1
@@ -84,5 +89,11 @@ module.exports = cache =
         {dateModified} = JSON.parse meta
         newest = dateModified if dateModified > newest
     newest
+  
+  clear: ->
+    localStorage.clear()
+    document.cookie = "clumper=; max-age=0"
+    document.cookie = "clumperOldest=; max-age=0"
+    null
   
   
