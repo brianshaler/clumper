@@ -37,18 +37,11 @@ gulp.task 'build-client', ['client-browserify'], ->
 gulp.task 'watch', ['coffee', 'build-client'], ->
   gulp.watch ['lib/client/**/*.js'], ['build-client']
   
-  watch glob: 'src/server/**/*.coffee'
+  watch glob: 'src/**/*.coffee'
   .pipe plumber()
   .pipe coffee()
-  .on 'error', gutil.beep
   .on 'error', gutil.log
+  .on 'error', gutil.beep
   .pipe gulp.dest './lib'
-  
-  watch glob: 'src/client/**/*.coffee'
-  .pipe plumber()
-  .pipe coffee()
-  .on 'error', gutil.beep
-  .on 'error', gutil.log
-  .pipe gulp.dest './lib/client'
 
 gulp.task 'default', ['coffee', 'build-client'], ->
