@@ -27,7 +27,7 @@ fetch = _.debounce ->
   # since they were queued up
   
   queue = _.filter queue, (item) ->
-    null == cache.get Dependency.getName item.name
+    !(cache.get Dependency.getName item.name)
   
   return unless queue.length > 0
   
