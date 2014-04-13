@@ -130,7 +130,7 @@ clumper.saveModule = (name, data, error) ->
   cache.save dep
 
 # expose for debug purposes only
-#clumper.deps = deps
-#clumper.cache = cache
+clumper.deps = deps
+clumper.cache = cache
 
 module.exports = clumper
