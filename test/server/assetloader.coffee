@@ -95,7 +95,7 @@ describe 'server/assetLoader', ->
       files[0].path.should.equal resolvedPath
       done()
 
-  it 'a, ./a.js, and a.js should not be normalized if explicitly requested as different names', (done) ->
+  it 'should not normalize `a`, `./a.js`, and `a.js` if explicitly requested as different names', (done) ->
     moduleNames = ['a', './a.js', 'a.js']
     clumper.assetLoader moduleNames, (err, files) ->
       should.not.exist err
@@ -117,7 +117,7 @@ describe 'server/assetLoader', ->
       files[2].name.should.equal moduleNames[2]
       done()
 
-  it 'jquery should exist with no dependencies', (done) ->
+  it 'should return jquery with no dependencies', (done) ->
     moduleName = 'jquery'
     clumper.assetLoader [moduleName], (err, files) ->
       should.not.exist err
@@ -126,7 +126,7 @@ describe 'server/assetLoader', ->
       files[0].path.should.equal "/#{moduleName}.js"
       done()
 
-  it 'react should exist with no dependencies, ignoring require for `./React`', (done) ->
+  it 'should return react with no dependencies, ignoring require for `./React`', (done) ->
     moduleName = 'react'
     clumper.assetLoader [moduleName], (err, files) ->
       should.not.exist err
@@ -136,7 +136,7 @@ describe 'server/assetLoader', ->
       files[0].path.should.equal "/#{moduleName}.js"
       done()
 
-  it 'case-insensitive duplicates should not be filtered out if actually requested', (done) ->
+  it 'should not filter out case-insensitive duplicates if actually requested', (done) ->
     moduleNames = ['react', './React']
     clumper.assetLoader moduleNames, (err, files) ->
       should.not.exist err
@@ -145,3 +145,30 @@ describe 'server/assetLoader', ->
       files[0].name.should.equal moduleNames[0]
       files[1].name.should.equal moduleNames[1]
       done()
+  
+  it 'should respond with `a` when asking for `b` if `b` is cached as `a`', (done) ->
+    moduleNames = ['/a.js', '/b.js']
+    module = require path.join @fixtures, './a.json'
+    
+    _cache = {}
+    _cache[moduleNames[0]] = module
+    _cache[moduleNames[1]] = module
+    
+    oldCache = clumper.config.cache
+    clumper.config.cache =
+      read: (name, next) ->
+        if _cache[name]
+          return next null, _cache[name]
+        next()
+      write: (name, data, next) ->
+        next()
+    
+    clumper.assetLoader moduleNames, (err, files) ->
+      #clumper.config.cache = oldCache
+      should.not.exist err
+      should.exist files
+      files.length.should.equal 2
+      files[0].data.should.equal module.data
+      files[1].data.should.equal module.data
+      done()
+    
