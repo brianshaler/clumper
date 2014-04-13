@@ -2,7 +2,7 @@ fs = require 'fs'
 path = require 'path'
 config = require './config'
 
-clumperPath = path.resolve __dirname, '../../dist/clumper.js'
+clumperPath = path.resolve __dirname, '../../dist/clumper.min.js'
 
 template = (files) ->
   """
