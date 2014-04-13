@@ -3,9 +3,16 @@
   <title>Demo</title>
   <script src="/clumper.js?include=true&amp;files=/demo/test2.js"></script>
   <script>
+  require.config({
+    packages: [{
+      name: 'foobar',
+      location: '.'
+    }]
+  });
+  
   require(['./demo/test2.js'], function (test2) { test2("Demo 2! (./demo/test2.js)"); });
   require(['demo/test2'], function (test2) { test2("Demo 2! (demo/test2)"); });
-  require(['/demo/test3.js'], function (test3) { test3("Demo 3!"); });
+  require(['foobar/demo/test3'], function (test3) { test3("Demo 3!"); });
   </script>
 </head>
 <body>
