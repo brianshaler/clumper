@@ -43,6 +43,7 @@ clumper =
       dep.process stored
     else
       fetcher.fetch dep.name, (err, file) ->
+        dep.fileId = file.fileId if file.fileId
         dep.version = file.version if file.version
         dep.dateModified = file.dateModified
         if file.data
@@ -54,9 +55,10 @@ clumper =
           throw new Error "No file OR data?!"
         cache.save dep
   
-  process: (name, err, data, version = Date.now(), dateModified = 0) ->
+  process: (name, err, data, fileId = '', version = Date.now(), dateModified = 0) ->
     dep = getDep name
     unless dep.processed
+      dep.fileId = fileId
       dep.version = version
       dep.dateModified = dateModified
       if data

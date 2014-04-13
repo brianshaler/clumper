@@ -1,4 +1,5 @@
 clumper = require '../../'
+path = require 'path'
 should = require 'should'
 request = require 'supertest'
 require 'mocha'
@@ -75,10 +76,11 @@ describe 'server/middleware', ->
       .end done
 
   it 'should respond with only files not in manifest cookie', (done) ->
+    module = require path.join @fixtures, './a.json'
+    cookie = "clumperOldest=#{Date.now()}; clumper=#{module.fileId}#{module.version}"
     request @app
       .get '/clumper.json?files=c.js'
-      .set 'cookie', "clumperOldest=#{Date.now()}; clumper=" + JSON.stringify
-        'a.js': 'tCkU'
+      .set 'cookie', cookie
       .expect 200
       .end (err, res) ->
         {files} = JSON.parse res.text

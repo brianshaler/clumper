@@ -5,6 +5,7 @@ class Dependency
     
     @error = null
     @data = null
+    @fileId = ''
     @version = Date.now()
     @dateModified = 0
   

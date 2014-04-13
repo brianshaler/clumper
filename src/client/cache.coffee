@@ -20,21 +20,30 @@ module.exports = cache =
     cache.manifest
   
   updateCookie: ->
-    manifestString = JSON.stringify cache.manifest
-    document.cookie = "clumper=#{manifestString}"
+    #manifestString = JSON.stringify cache.manifest
+    fileIdList = ''
+    for name, version of cache.manifest
+      str = localStorage.getItem "meta:#{name}"
+      if str
+        meta = JSON.parse str
+        if meta?.fileId?.length == 4 and meta.version.length == 4
+          fileIdList += "#{meta.fileId}#{version}"
+    document.cookie = "clumper=#{fileIdList}"
     document.cookie = "clumperOldest=#{cache.getOldestFile()}"
   
   save: (dep, name, data, error) ->
     version = Date.now()
     dateModified = 0
+    fileId = ''
     if dep
-      {name, data, error, version, dateModified} = dep
+      {name, data, error, fileId, version, dateModified} = dep
     #names = getNames name
     #name = names[0]
     unless !data? or data == 'null'
       localStorage.setItem name, data
     localStorage.setItem "meta:#{name}", JSON.stringify
       name: name
+      fileId: fileId
       cachedAt: Date.now()
       dateModified: dateModified
       version: version

@@ -11,7 +11,7 @@ template = (files) ->
   if (clumper) {
     clumper.removeItemsOlderThan(#{config.newestFile});
     for (var k in data) {
-      clumper.process(data[k].name, data[k].error, data[k].data, data[k].version, (new Date(data[k].dateModified)).getTime());
+      clumper.process(data[k].name, data[k].error, data[k].data, data[k].fileId, data[k].version, (new Date(data[k].dateModified)).getTime());
       clumper.eval(data[k].name);
     }
   }

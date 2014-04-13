@@ -1,9 +1,10 @@
 {
-  "name": "./a.js",
-  "path": "/a.js",
-  "data": "define(function(){\n  return 'a';\n});",
-  "error": null,
-  "dateModified": "2014-04-11T18:42:30.000Z",
-  "version": "tCkU",
-  "dependencies": []
-}
+   "name": "/a.js",
+   "path": "/a.js",
+   "data": "define(function(){\n  return 'a';\n});",
+   "error": null,
+   "dateModified": "2014-04-11T18:42:30.000Z",
+   "version": "tCkU",
+   "dependencies": [],
+   "fileId": "KecO"
+ }

@@ -6,42 +6,7 @@ assetLoader = require './assetloader'
 asset = require './asset'
 formatJS = require './formatjs'
 nameResolver = require './nameResolver'
-
-getLatestModified = (files) ->
-  latest = -1
-  for file in files
-    if file.dateModified?.getTime
-      t = file.dateModified.getTime()
-      latest = t if latest == -1 or t > latest
-  if latest == -1
-    latest = Date.now()
-  latest
-
-processCookie = (files, requestedNames, rawCookie) ->
-  clientOldest = /\bclumperOldest=([\d]+)/.exec rawCookie
-  if !clientOldest
-    # don't filter if client doesn't have any files
-    return files
-  clientOldest = parseInt clientOldest[1]
-  if clientOldest > 0 and clientOldest < config.newestFile
-    # don't filter if client has any out-dated files
-    return files
-  
-  len1 = files.length
-  clumperCookie = /\bclumper=([^}]+})/.exec rawCookie
-  if clumperCookie?[1]
-    clientManifest = JSON.parse clumperCookie[1]
-    files = _.filter files, (file) ->
-      # definitely send it if the client asked for it
-      if (_.find requestedNames, (name) -> name == file.name)
-        return true
-      name = nameResolver file.name
-      name = name.replace /^[\/\.]+/, ''
-      #console.log "> check to see if #{name}@#{file.version} is in clumperCookie", JSON.stringify clientManifest
-      if clientManifest[name] == file.version
-        return false
-      true
-  files
+cookieParser = require './cookieParser'
 
 request = (root, options) ->
   throw new TypeError 'root path required' unless root
@@ -66,7 +31,13 @@ request = (root, options) ->
       if format == 'js' and files?.length == 1 and files[0].error
         return res.redirect files[0].name
       
-      latest = getLatestModified files
+      latest = -1
+      for file in files
+        if file.dateModified?.getTime
+          t = file.dateModified.getTime()
+          latest = t if latest == -1 or t > latest
+      if latest == -1
+        latest = Date.now()
       
       if req.headers['if-modified-since']?
         since = new Date req.headers['if-modified-since']
@@ -78,7 +49,7 @@ request = (root, options) ->
       res.setHeader 'Last-Modified', new Date()
       
       if req.headers.cookie
-        files = processCookie files, names, req.headers.cookie
+        files = cookieParser files, names, req.headers.cookie, config.newestFile
       
       if format == 'js'
         res.type 'js'

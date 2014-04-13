@@ -13,6 +13,11 @@ hashFile = (name, next) ->
     return next err if err
     next null, hashFilePathAndData file.path, file.data
 
+hashFilePath = (path) ->
+  hash = crypto.createHash 'md5'
+  hash.update path
+  hash.digest('base64').substring 0, 4
+
 hashFilePathAndData = (path, data) ->
   hash = crypto.createHash 'md5'
   # Not a good idea to use mtime if starting your service rebuilds files
@@ -52,6 +57,10 @@ class File
     @properties.version = hashFilePathAndData @properties.path, @properties.data
     @
   
+  getFileId: =>
+    @properties.fileId = hashFilePath @properties.path
+    @
+  
   getDependencies: =>
     if @properties.data?.length > 0 and /define\(/.test @properties.data
       @properties.dependencies = depcheck @properties.data, []
@@ -72,6 +81,7 @@ load = (name, next) ->
     next err
   .done ->
     file.getVersion()
+    file.getFileId()
     file.getDependencies()
     t = file.properties.dateModified.getTime()
     config.newestFile = t if t > config.newestFile
