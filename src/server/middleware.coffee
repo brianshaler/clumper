@@ -35,7 +35,7 @@ processCookie = (files, requestedNames, rawCookie) ->
       # definitely send it if the client asked for it
       if (_.find requestedNames, (name) -> name == file.name)
         return true
-      name = nameResolver file.name, config.baseDir, config.pathFilter
+      name = nameResolver file.name
       name = name.replace /^[\/\.]+/, ''
       #console.log "> check to see if #{name}@#{file.version} is in clumperCookie", JSON.stringify clientManifest
       if clientManifest[name] == file.version
@@ -43,10 +43,11 @@ processCookie = (files, requestedNames, rawCookie) ->
       true
   files
 
-request = (root) ->
+request = (root, options) ->
   throw new TypeError 'root path required' unless root
   
   config.baseDir = root
+  config.configure options if options?
   
   (req, res, next) ->
     {pathname} = parseurl req

@@ -23,7 +23,7 @@ hashFilePathAndData = (path, data) ->
 
 class File
   constructor: (name) ->
-    @relativePath = nameResolver name, config.baseDir, config.pathFilter
+    @relativePath = nameResolver name
     @fullPath = path.join config.baseDir, @relativePath
     @properties =
       name: name
@@ -56,7 +56,7 @@ class File
     if @properties.data?.length > 0 and /define\(/.test @properties.data
       @properties.dependencies = depcheck @properties.data, []
       # clean up paths
-      @properties.dependencies = _.uniq _.map @properties.dependencies, (name) -> config.pathFilter name
+      @properties.dependencies = _.uniq _.map @properties.dependencies, (name) -> nameResolver name
     @
 
 load = (name, next) ->
@@ -94,7 +94,7 @@ load = (name, next) ->
       if file.data?.length > 0 and /define\(/.test file.data
         file.dependencies = depcheck file.data, []
         # clean up paths
-        file.dependencies = _.uniq _.map file.dependencies, (name) -> config.pathFilter name
+        file.dependencies = _.uniq _.map file.dependencies, (name) -> nameResolver name
       
       next null, file
 

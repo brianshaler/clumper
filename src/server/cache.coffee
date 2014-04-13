@@ -1,7 +1,7 @@
 # basic in-memory cache example
 
 cache = {}
-cacheDuration = 3.0 * 1000
+cacheDuration = 30 * 1000
 
 module.exports =
   

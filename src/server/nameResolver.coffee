@@ -1,6 +1,9 @@
 path = require 'path'
+config = require './config'
 
-module.exports = (name, baseDir, pathFilter) ->
+module.exports = (name) ->
+  {baseDir, pathFilter} = config
+  
   name = pathFilter name
   if name.charAt(0) != '/'
     name = "/#{name}"
@@ -10,11 +13,11 @@ module.exports = (name, baseDir, pathFilter) ->
     name = "#{name}.js"
   
   # make sure relative path is *within* base directory
-  fullPath = path.resolve "#{baseDir}#{name}"
+  fullPath = path.join baseDir, name
   unless baseDir == fullPath.substring 0, baseDir.length
-    # invalid path!
+    # invalid path! remove all ..'s
     name = name.replace '..', '.'
-    fullPath = path.resolve "#{baseDir}#{name}"
+    fullPath = path.join baseDir, name
   
   # return relative path
   fullPath.substring baseDir.length
