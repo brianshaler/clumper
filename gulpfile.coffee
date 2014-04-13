@@ -5,9 +5,12 @@ plumber = require 'gulp-plumber'
 watch = require 'gulp-watch'
 concat = require 'gulp-concat'
 coffee = require 'gulp-coffee'
-#uglify = require 'gulp-uglify'
+uglify = require 'gulp-uglify'
 browserify = require 'gulp-browserify'
 rename = require 'gulp-rename'
+
+# TODO
+# lodash -m -o vendor/lodash.custom.js include=map,filter,debounce exports=global
 
 gulp.task 'coffee', ->
   gulp.src "src/**/*.coffee"
@@ -26,10 +29,9 @@ gulp.task 'client-browserify', ->
   .pipe gulp.dest './lib/client'
 
 gulp.task 'build-client', ['client-browserify'], ->
-  # TODO
-  # lodash -m -o vendor/lodash.custom.js include=map,filter,debounce exports=global
   gulp.src ['vendor/lodash.custom.js', 'lib/client/client.js', 'vendor/require.js', 'lib/client/require.load.js']
-  .pipe concat 'clumper.js'
+  .pipe concat 'clumper.min.js'
+  .pipe uglify()
   .pipe gulp.dest './dist'
 
 gulp.task 'watch', ['coffee', 'build-client'], ->
