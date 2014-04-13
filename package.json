@@ -1,14 +1,14 @@
 {
   "name": "clumper",
-  "version": "0.0.2",
-  "description": "clump js dependencies together",
+  "version": "0.0.3",
+  "description": "Runtime module bundling, request batching, anticipated dependency loading, and localStorage caching to eliminate extraneous HTTP requests for javascript assets.",
   "main": "index.js",
   "dependencies": {
     "express": "~3.5.1",
     "lodash": "~2.4.1",
     "async": "~0.6.2",
     "parseurl": "^1.0.1",
-    "bluebird": "~1.2.2",
+    "bluebird": "~1.2.2"
   },
   "devDependencies": {
     "coffee-script": "~1.7.1",
@@ -31,6 +31,16 @@
     "should": "~3.1.0",
     "supertest": "^0.10.0"
   },
+  "keywords": [
+    "clumper",
+    "amd",
+    "modules",
+    "browser",
+    "browserify",
+    "bundling",
+    "performance",
+    "caching"
+  ],
   "scripts": {
     "test": "mocha test/*.coffee test/server/*.coffee test/client/*.coffee --require coffee-script/register --reporter spec && jshint",
     "start": "node lib/server/demoServer"
