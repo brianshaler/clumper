@@ -3,12 +3,14 @@
   <title>Demo</title>
   <script src="/clumper.js?include=true&amp;files=/demo/test2.js"></script>
   <script>
-  require(['/demo/test2.js'], function (test2) { test2("Demo!"); });
+  require(['./demo/test2.js'], function (test2) { test2("Demo 2! (./demo/test2.js)"); });
+  require(['demo/test2'], function (test2) { test2("Demo 2! (demo/test2)"); });
+  require(['/demo/test3.js'], function (test3) { test3("Demo 3!"); });
   </script>
 </head>
 <body>
   demo
   <br />
-  <button onclick='javascript: localStorage.clear();'>clear localStorage</button>
+  <button onclick='javascript: clumper.reset();'>clear localStorage and cookie</button>
 </body>
 </html>
