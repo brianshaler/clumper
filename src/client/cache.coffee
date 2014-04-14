@@ -20,7 +20,6 @@ module.exports = cache =
     cache.manifest
   
   updateCookie: ->
-    #manifestString = JSON.stringify cache.manifest
     fileIdList = ''
     for name, version of cache.manifest
       str = localStorage.getItem "meta:#{name}"
@@ -29,22 +28,24 @@ module.exports = cache =
         if meta?.fileId?.length == 4 and meta.version.length == 4
           fileIdList += "#{meta.fileId}#{version}"
     document.cookie = "clumper=#{fileIdList}"
-    document.cookie = "clumperOldest=#{cache.getOldestFile()}"
+    document.cookie = "clumperOldest=#{cache.getOldestTime()}"
   
   save: (dep, name, data, error) ->
     version = Date.now()
     dateModified = 0
     fileId = ''
+    cachedAt = Date.now()
     if dep
       {name, data, error, fileId, version, dateModified} = dep
-    #names = getNames name
-    #name = names[0]
+      # sent in via tests
+      if dep.cachedAt
+        cachedAt = dep.cachedAt
     unless !data? or data == 'null'
       localStorage.setItem name, data
     localStorage.setItem "meta:#{name}", JSON.stringify
       name: name
       fileId: fileId
-      cachedAt: Date.now()
+      cachedAt: cachedAt
       dateModified: dateModified
       version: version
       error: error
@@ -74,30 +75,20 @@ module.exports = cache =
         {cachedAt} = JSON.parse meta
         if cachedAt < time
           localStorage.removeItem name
+          localStorage.removeItem "meta:#{name}"
           delete manifest[name]
-    
     newest = localStorage.getItem 'clumperNewest'
     if time > newest
       localStorage.setItem 'clumperNewest', time
-    
   
-  getOldestFile: ->
-    oldest = -1
+  getOldestTime: ->
+    oldest = 0
     for name of cache.manifest
       meta = cache.get "meta:#{name}"
       if meta
         {cachedAt} = JSON.parse meta
-        oldest = cachedAt if cachedAt < oldest or oldest == -1
+        oldest = cachedAt if cachedAt < oldest or oldest == 0
     oldest
-  
-  getNewestFile: ->
-    newest = 0
-    for name of cache.manifest
-      meta = cache.get "meta:#{name}"
-      if meta
-        {dateModified} = JSON.parse meta
-        newest = dateModified if dateModified > newest
-    newest
   
   clear: ->
     localStorage.clear()
