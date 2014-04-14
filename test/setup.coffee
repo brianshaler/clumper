@@ -14,6 +14,7 @@ global.localStorage = localStorage =
   clear: -> localStorage.data = {}
   getItem: (key) -> localStorage.data[key]
   setItem: (key, value) -> localStorage.data[key] = value
+  removeItem: (key) -> delete localStorage.data[key]
 
 global.document = document =
   cookie: ''
