@@ -105,3 +105,36 @@ To prevent an extra roundtrip to the server, include the module in the initial &
 
 URLs and caches are invalidated when the server sees a file has changed. However, the server does not watch your files—it will only see a file has changed if the browser does not have it in localStorage, requests the file, and the server-side caching mechanism doesn't have a response. Then, the next response to any request will invalidate old caches. The process is not perfect, but when aggressively caching and trying to eliminate HTTP requests, it becomes difficult to invalidate all layers of cache.
 
+## TODOs
+
+### Graceful degredation & cross-browser testing
+
+It's only been tested in modern versions of Chrome and Firefox. The biggest concern is localStorage
+
+### 5MB localStorage limit?
+
+And then what? Not even sure what happens when/if this is reached. Do setItem() calls throw or something?
+
+### More tests, and maybe some coverage reporting
+
+CoffeeScript coverage reporting seems to be trickier than plug-and-play.
+
+### Middleware: Configure using RequireJS `packages` syntax
+
+Use same, or at least compatible, syntax for defining aliases, instead of current `pathFilter` regex.
+
+### Middleware: Relative dependencies
+
+Relative dependencies are loaded relative to app root, not relative to current module. That's not right.
+
+### Out of process caching
+
+Currently, the server can use clumper.basicCache to use a primitive in-memory data store to avoid repeatedly reading files from disk and scanning for dependencies. Other data stores, such as Redis or memcache, would be better suited for this.
+
+### Dev mode?
+
+The client library heavily caches aggressively, but if the server opens a file that has changed, it will purge the client's cache. If a new/updated file isn't directly requested, the server won't know to invalidate the client cache.
+
+A hard refresh in the browser (without full content-clearing) doesn't send If-Modified-Since on initial load, but in Chrome, it seems to serve some AJAX calls via cache.
+
+It would probably be helpful to detect the env and enable/disable clumper accordingly. While clumper should certainly be tested before pushing to production, being able to disable clumper would probably be helpful while making changes to the cacheable JS assets.
