@@ -1,6 +1,6 @@
 
 # hack requirejs to load modules through clumper
-@require.load = (context, moduleName, url) ->
+@require.load = @requirejs.load = (context, moduleName, url) ->
   clumper.require url, (err, dep) ->
     if !dep? or dep?.error
       # fall back to letting requirejs do it's own thang
