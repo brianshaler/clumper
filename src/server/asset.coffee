@@ -38,7 +38,7 @@ class File
       dateModified: new Date 0
       version: null
       dependencies: []
-  
+
   loadFile: =>
     new Promise (resolve, reject) =>
       fs.readFile @fullPath, 'utf-8', (err, content) =>
@@ -46,26 +46,26 @@ class File
         @properties.error = err.code if err
         @properties.data = content if content
         resolve()
-  
+
   getDateModified: =>
     new Promise (resolve, reject) =>
       fs.stat @fullPath, (err, stats) =>
         @properties.dateModified = stats.mtime if !err and stats?.mtime
         resolve()
-  
+
   getVersion: =>
     @properties.version = hashFilePathAndData @properties.path, @properties.data
     @
-  
+
   getFileId: =>
     @properties.fileId = hashFilePath @properties.path
     @
-  
-  getDependencies: =>
+
+  getDependencies: (srcDir) =>
     if @properties.data?.length > 0 and /define\(/.test @properties.data
       @properties.dependencies = depcheck @properties.data, []
       # clean up paths
-      @properties.dependencies = _.uniq _.map @properties.dependencies, (name) -> nameResolver name
+      @properties.dependencies = _.uniq _.map @properties.dependencies, (name) -> nameResolver name, srcDir
     @
 
 load = (name, next) ->
@@ -80,32 +80,33 @@ load = (name, next) ->
     console.log 'done! (error)', r
     next err
   .done ->
-    file.getVersion()
-    file.getFileId()
-    file.getDependencies()
+    file
+    .getVersion()
+    .getFileId()
+    .getDependencies path.resolve file.fullPath, '..'
     t = file.properties.dateModified.getTime()
     config.newestFile = t if t > config.newestFile
     next null, file.properties
   return
-  
+
   fs.readFile fullPath, 'utf-8', (err, content) ->
     file.error = err.code if err
     file.data = content if content
-    
+
     # get date modified
     fs.stat fullPath, (err, stats) ->
       file.dateModified = stats.mtime if !err and stats?.mtime
-      
+
       t = file.dateModified.getTime()
       config.newestFile = t if t > config.newestFile
-      
+
       file.version = hashFilePathAndData file.path, file.data
-      
+
       if file.data?.length > 0 and /define\(/.test file.data
         file.dependencies = depcheck file.data, []
         # clean up paths
         file.dependencies = _.uniq _.map file.dependencies, (name) -> nameResolver name
-      
+
       next null, file
 
 module.exports =

@@ -106,6 +106,14 @@ describe 'server/assetLoader', ->
       files[2].name.should.equal moduleNames[2]
       done()
 
+  it 'should crawl paths relatively', (done) ->
+    moduleNames = ['./e.js']
+    clumper.assetLoader moduleNames, (err, files) ->
+      should.not.exist err
+      should.exist files
+      files.length.should.equal 4
+      done()
+
   it 'should not include duplicates for cross-over dependencies', (done) ->
     moduleNames = ['./a.js', './b.js', './c.js']
     clumper.assetLoader moduleNames, (err, files) ->
@@ -145,15 +153,15 @@ describe 'server/assetLoader', ->
       files[0].name.should.equal moduleNames[0]
       files[1].name.should.equal moduleNames[1]
       done()
-  
+
   it 'should respond with `a` when asking for `b` if `b` is cached as `a`', (done) ->
     moduleNames = ['/a.js', '/b.js']
     module = require path.join @fixtures, './a.json'
-    
+
     _cache = {}
     _cache[moduleNames[0]] = module
     _cache[moduleNames[1]] = module
-    
+
     oldCache = clumper.config.cache
     clumper.config.cache =
       read: (name, next) ->
@@ -162,7 +170,7 @@ describe 'server/assetLoader', ->
         next()
       write: (name, data, next) ->
         next()
-    
+
     clumper.assetLoader moduleNames, (err, files) ->
       #clumper.config.cache = oldCache
       should.not.exist err
@@ -171,4 +179,3 @@ describe 'server/assetLoader', ->
       files[0].data.should.equal module.data
       files[1].data.should.equal module.data
       done()
-    
