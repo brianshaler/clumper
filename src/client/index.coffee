@@ -1,6 +1,8 @@
 # requires (via gulp-concat) lodash, and requirejs
 #console.log 'setting up clumper', window.require, require
 
+define = window.define
+
 Dependency = require './dependency'
 cache = require './cache'
 fetcher = require './fetcher'
