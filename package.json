@@ -44,7 +44,7 @@
   "scripts": {
     "test": "mocha test/*.coffee test/server/*.coffee test/client/*.coffee --require coffee-script/register --reporter spec && jshint",
     "start": "node lib/server/demoServer",
-    "prepublish": "rm -rf ./lib/ ./dist/ && gulp"
+    "prepublish": "rm -rf ./lib/ ./dist/ && gulp --require coffee-script/register"
   },
   "author": "Brian Shaler",
   "license": "MIT",
