@@ -1,6 +1,6 @@
 {
   "name": "clumper",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Runtime module bundling, request batching, anticipated dependency loading, and localStorage caching to eliminate extraneous HTTP requests for javascript assets.",
   "main": "index.js",
   "dependencies": {
