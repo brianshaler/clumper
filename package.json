@@ -1,6 +1,6 @@
 {
   "name": "clumper",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Runtime module bundling, request batching, anticipated dependency loading, and localStorage caching to eliminate extraneous HTTP requests for javascript assets.",
   "main": "index.js",
   "dependencies": {
@@ -37,6 +37,10 @@
     "performance",
     "caching"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brianshaler/clumper.git"
+  },
   "scripts": {
     "test": "mocha test/*.coffee test/server/*.coffee test/client/*.coffee --require coffee-script/register --reporter spec && jshint",
     "start": "node lib/server/demoServer"
