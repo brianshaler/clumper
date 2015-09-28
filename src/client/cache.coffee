@@ -31,7 +31,7 @@ module.exports = cache =
       "clumper=#{fileIdList}"
       "path=/"
       "expires=Fri, 31 Dec 9999 23:59:59 GMT"
-      "clumperOldest=#{cache.getOldestFile()}"
+      "clumperOldest=#{cache.getOldestTime()}"
       "path=/"
       "expires=Fri, 31 Dec 9999 23:59:59 GMT"
     ].join '; '
